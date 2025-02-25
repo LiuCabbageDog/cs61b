@@ -86,6 +86,15 @@ public class Model {
      * */
     public boolean emptySpaceExists() {
         // TODO: Task 1. Fill in this function.
+        int size = board.size();
+        for(int i = 0; i < size; i++){
+            for (int j = 0; j < size; j++){
+                Tile currentTile = board.tile(i, j);
+                if (currentTile == null){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -96,6 +105,18 @@ public class Model {
      */
     public boolean maxTileExists() {
         // TODO: Task 2. Fill in this function.
+        int size = board.size();
+        for(int i = 0; i < size; i++){
+            for (int j = 0; j < size; j++){
+                Tile currentTile = board.tile(i, j);
+                if (currentTile == null){
+                    continue;
+                }
+                else{
+                    if (currentTile.value() == MAX_PIECE) return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -107,6 +128,56 @@ public class Model {
      */
     public boolean atLeastOneMoveExists() {
         // TODO: Task 3. Fill in this function.
+        if (emptySpaceExists()){
+            return true;
+        }
+        else if(adjacentTilesSameValue()){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public boolean adjacentTilesSameValue(){
+        int size = board.size();
+        for(int i = 0; i < size; i++){
+            for (int j = 0; j < size; j++){
+                Tile currentTile = board.tile(i, j);
+
+                // left tile
+                if ((i-1) >= 0){
+                    Tile leftTile = board.tile((i-1), j);
+                    if (leftTile.value() == currentTile.value()){
+                        return true;
+                    }
+                }
+
+                // right tile
+                if ((i+1) < size){
+                    Tile rightTile = board.tile((i+1), j);
+                    if (rightTile.value() == currentTile.value()){
+                        return true;
+                    }
+                }
+
+                // top tile
+                if ((j+1) < size){
+                    Tile topTile = board.tile(i, (j+1));
+                    if (topTile.value() == currentTile.value()){
+                        return true;
+                    }
+                }
+
+                // bottom tile
+                if ((j-1) > 0){
+                    Tile bottomTile = board.tile(i, (j-1));
+                    if (bottomTile.value() == currentTile.value()){
+                        return true;
+                    }
+                }
+            }
+        }
         return false;
     }
 
@@ -130,6 +201,84 @@ public class Model {
         int targetY = y;
 
         // TODO: Tasks 5, 6, and 10. Fill in this function.
+
+        /* 方法一：存在小瑕疵
+        // task 5 move up as far as possible
+        if (currTile != null) {
+            // construct inspector
+            int inspector = y+1;
+            while(inspector < board.size()){
+                if (board.tile(x, inspector) != null) break;
+                else{
+                    inspector++;
+                }
+            }
+            board.move(x, inspector-1, currTile);
+            // task 6
+            if (inspector < board.size()){
+                Tile nextTile = board.tile(x, inspector);
+                if((!nextTile.wasMerged()) && (currTile.value() == nextTile.value() ) ){
+                    board.move(x, inspector, currTile);
+                }
+            }
+        } */
+
+        //我改的方法二
+        // task 5 move up as far as possible
+        // 如果原格子已经在顶头位置3， 不进函数，不动它。
+        if ( (currTile != null) && (y < (board.size()-1) ) ){
+            // construct inspector
+            int inspector = y+1;
+            while(inspector < board.size()){
+                if (board.tile(x, inspector) != null) break;
+                else{
+                    inspector++;
+                }
+            }
+            // 出来时，检测器如果遇见东西了，就是1-3； 没遇见东西就是4
+
+            // task 6
+            if (inspector < board.size()){
+                Tile nextTile = board.tile(x, inspector);
+                if((!nextTile.wasMerged()) && (currTile.value() == nextTile.value() ) ){
+                    board.move(x, inspector, currTile);
+                    // task10
+                    score += (nextTile.value() * 2);
+                }
+                else{board.move(x, inspector-1, currTile); //因为忘写这一行代码卡了俩小时，妈的。
+                }
+            }
+            else{
+                board.move(x, inspector-1, currTile);
+            }
+        }
+
+        /*
+        // 以下为gpt写的，全对。操 = -为什么呢
+        // 如果当前方块不为空且不在最顶部
+        if (currTile != null && y < board.size() - 1) {
+            int aimY = y;
+
+            // 向上查找最近的非空位置
+            for (int i = y + 1; i < board.size(); i++) {
+                if (board.tile(x, i) == null) {
+                    aimY = i; // 更新目标位置为当前空位置
+                } else {
+                    // 如果找到的非空位置的方块与当前方块值相等且未被合并
+                    if (board.tile(x, i).value() == currTile.value() && !board.tile(x, i).wasMerged()) {
+                        aimY = i; // 更新目标位置为当前非空位置
+                    }
+                    break; // 结束查找
+                }
+            }
+
+            // 如果目标位置与当前位置不同，进行移动
+            if (aimY != y) {
+                board.move(x, aimY, currTile);
+            }
+        }*/
+
+
     }
 
     /** Handles the movements of the tilt in column x of board B
@@ -139,10 +288,28 @@ public class Model {
      * */
     public void tiltColumn(int x) {
         // TODO: Task 7. Fill in this function.
+        int y = board.size() - 1;
+        while (y >= 0){
+            if(board.tile(x, y) != null){
+                moveTileUpAsFarAsPossible(x, y);
+            }
+            y--;
+        }
     }
 
     public void tilt(Side side) {
         // TODO: Tasks 8 and 9. Fill in this function.
+
+        // task9
+        board.setViewingPerspective(side);
+
+        // task 8
+        for (int x = 0; x < board.size(); x++){
+            tiltColumn(x);
+        }
+
+        // task9
+        board.setViewingPerspective(Side.NORTH);
     }
 
     /** Tilts every column of the board toward SIDE.
