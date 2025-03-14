@@ -90,6 +90,16 @@ public class SpeciesListStage implements AdventureStage {
      * Computes the similarity of two lists. If there is similarity, return 1.
      * If there is no similarity, it should return 0.
      */
+
+    /**
+     * Liu's solution;
+     * 1. when 2 list all empty, return 1;
+     * 2. when one list empty and the other not, return 0;
+     * 3. when 2 list not empty, compute.
+     * @param listOne
+     * @param listTwo
+     * @return
+     */
     public static int arraySimilarity(List<String> listOne, List<String> listTwo) {
         List<String> copy = new ArrayList<>(listOne);
         int similarObjects = 0;
